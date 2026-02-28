@@ -16,6 +16,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Category> Categories { get; set; } = null!;
     public DbSet<Reservation> Reservations { get; set; } = null!;
     public DbSet<Fine> Fines { get; set; } = null!;
+    public DbSet<Notification> Notifications { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,10 +82,10 @@ public class ApplicationDbContext : DbContext
         );
 
         modelBuilder.Entity<User>().HasData(
-            new User { Id = 1, FullName = "Admin Sistema", Email = "admin@lenda.com", Role = "Admin", Status = "Active" },
-            new User { Id = 2, FullName = "João Silva", Email = "joao@estudante.edu", StudentNumber = "2023001", Role = "Student", Status = "Active" },
-            new User { Id = 3, FullName = "Maria Oliveira", Email = "maria@professora.edu", Role = "Professor", Status = "Active" },
-            new User { Id = 4, FullName = "Carlos Bloqueado", Email = "carlos@estudante.edu", StudentNumber = "2023002", Role = "Student", Status = "Blocked" }
+            new User { Id = 1, FullName = "Admin Sistema", Email = "admin@lenda.com", Password = "admin123", Role = "Admin", Status = "Active" },
+            new User { Id = 2, FullName = "João Silva", Email = "joao@estudante.edu", Password = "estudante123", StudentNumber = "2023001", Role = "Student", Status = "Active" },
+            new User { Id = 3, FullName = "Maria Oliveira", Email = "maria@professora.edu", Password = "estudante123", Role = "Professor", Status = "Active" },
+            new User { Id = 4, FullName = "Carlos Bloqueado", Email = "carlos@estudante.edu", Password = "estudante123", StudentNumber = "2023002", Role = "Student", Status = "Blocked" }
         );
 
         modelBuilder.Entity<Book>().HasData(
@@ -104,6 +105,12 @@ public class ApplicationDbContext : DbContext
 
         modelBuilder.Entity<Fine>().HasData(
             new Fine { Id = 1, UserId = 4, LoanId = 2, Amount = 32.0m, DailyRateApplied = 2.0m, IsPaid = false, CreatedAt = DateTime.Now.AddDays(-16) }
+        );
+
+        modelBuilder.Entity<Notification>().HasData(
+            new Notification { Id = 1, Title = "Livro Atrasado", Message = "Carlos Bloqueado não devolveu 'Clean Code'.", Type = "danger", CreatedAt = DateTime.Now.AddHours(-2), IsRead = false },
+            new Notification { Id = 2, Title = "Nova Reserva", Message = "Maria solicitou 'Dom Casmurro'.", Type = "info", CreatedAt = DateTime.Now.AddHours(-5), IsRead = false },
+            new Notification { Id = 3, Title = "Multa Paga", Message = "João Silva pagou a multa de 4,00 Kz.", Type = "success", CreatedAt = DateTime.Now.AddDays(-1), IsRead = true }
         );
     }
 }

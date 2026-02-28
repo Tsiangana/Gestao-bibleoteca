@@ -1,20 +1,39 @@
 import React, { useState } from 'react';
 import { Book, Mail, Lock, UserPlus, User } from 'lucide-react';
+import { api } from '../api';
 
 const Register = ({ onRegister, onShowLogin }) => {
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        setError('');
+
         if (password !== confirmPassword) {
-            alert('As senhas não coincidem.');
+            setError('As senhas não coincidem.');
             return;
         }
-        // Simulate registration success
-        onRegister();
+
+        setLoading(true);
+        try {
+            const user = await api.post('/auth/register', {
+                fullName,
+                email,
+                password,
+                role: 'Student' // Default for new self-registered users
+            });
+            onRegister(user);
+        } catch (err) {
+            setError('Erro ao criar conta. O email já pode estar em uso.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -42,6 +61,8 @@ const Register = ({ onRegister, onShowLogin }) => {
 
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Criar nova conta</h2>
                 <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '2rem' }}>Junte-se à nossa comunidade de leitura.</p>
+
+                {error && <div style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '0.5rem', backgroundColor: '#FEF2F2', color: '#B91C1C', fontSize: '0.875rem' }}>{error}</div>}
 
                 <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
                     <div style={{ marginBottom: '1.25rem' }}>
@@ -104,8 +125,8 @@ const Register = ({ onRegister, onShowLogin }) => {
                         </div>
                     </div>
 
-                    <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '0.75rem', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                        <UserPlus size={18} /> Criar Conta
+                    <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', padding: '0.75rem', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: loading ? 0.7 : 1 }}>
+                        <UserPlus size={18} /> {loading ? 'Carregando...' : 'Criar Conta'}
                     </button>
                 </form>
 

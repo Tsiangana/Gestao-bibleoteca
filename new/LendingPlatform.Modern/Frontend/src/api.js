@@ -24,4 +24,11 @@ export const api = {
     if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
     return response.status === 204 ? null : await response.json();
   },
+  delete: async (endpoint) => {
+    const response = await fetch(`${BASE_URL}${endpoint}`, {
+      method: 'DELETE',
+    });
+    if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+    return response.status === 204 ? null : await response.json();
+  },
 };

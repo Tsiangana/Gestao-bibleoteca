@@ -55,7 +55,7 @@ const Fines = () => {
                         <DollarSign size={20} color="var(--danger)" />
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                             <span style={{ fontSize: '0.75rem', color: 'var(--danger)', fontWeight: '600' }}>Receita Pendente</span>
-                            <span style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--danger)' }}>R$ {pendingAmount.toFixed(2)}</span>
+                            <span style={{ fontSize: '1.25rem', fontWeight: '700', color: 'var(--danger)' }}>{pendingAmount.toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}</span>
                         </div>
                     </div>
                 </div>
@@ -74,7 +74,7 @@ const Fines = () => {
                             <th style={{ width: '40px' }}>ID</th>
                             <th>Usuário Cobrado</th>
                             <th>Motivo (Livro Original)</th>
-                            <th>Valor (R$)</th>
+                            <th>Valor (Kz)</th>
                             <th>Status</th>
                             <th>Ação</th>
                         </tr>
@@ -92,7 +92,7 @@ const Fines = () => {
                                         <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Gerada em {new Date(fine.createdAt).toLocaleDateString()}</div>
                                     </td>
                                     <td style={{ fontWeight: '600', color: fine.isPaid ? 'var(--text-secondary)' : 'var(--danger)' }}>
-                                        R$ {fine.amount.toFixed(2)}
+                                        {fine.amount.toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })}
                                     </td>
                                     <td>
                                         {fine.isPaid ? (

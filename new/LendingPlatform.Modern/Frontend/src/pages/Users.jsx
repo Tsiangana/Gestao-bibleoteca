@@ -1,15 +1,33 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Filter, Search, MoreVertical, Mail, Phone } from 'lucide-react';
+import { Plus, Filter, Search, MoreVertical, Mail, History } from 'lucide-react';
 import { api } from '../api';
+import UserHistoryModal from '../components/UserHistoryModal';
+import UserModal from '../components/UserModal';
 
-const Users = () => {
+const Users = ({ selectedId, onClearSelection }) => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [selectedUser, setSelectedUser] = useState(null);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         fetchUsers();
     }, []);
+
+    useEffect(() => {
+        if (selectedId && users.length > 0) {
+            const user = users.find(u => u.id === selectedId);
+            if (user) {
+                setSelectedUser(user);
+            }
+        }
+    }, [selectedId, users]);
+
+    const handleCloseHistory = () => {
+        setSelectedUser(null);
+        if (onClearSelection) onClearSelection();
+    };
 
     const fetchUsers = async () => {
         try {
@@ -22,6 +40,17 @@ const Users = () => {
             console.error(err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleSaveUser = async (userData) => {
+        try {
+            await api.post('/auth/register', userData);
+            setShowModal(false);
+            fetchUsers();
+        } catch (err) {
+            alert('Erro ao salvar usuário. O email pode já estar em uso.');
+            console.error(err);
         }
     };
 
@@ -60,10 +89,17 @@ const Users = () => {
                         Controle de alunos, professores e equipe técnica.
                     </p>
                 </div>
-                <button className="btn btn-primary">
+                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
                     <Plus size={16} /> Novo Usuário
                 </button>
             </div>
+
+            {showModal && (
+                <UserModal
+                    onClose={() => setShowModal(false)}
+                    onSave={handleSaveUser}
+                />
+            )}
 
             <div className="table-container">
                 <div className="table-header">
@@ -116,9 +152,18 @@ const Users = () => {
                                     <td>{getRoleBadge(user.role)}</td>
                                     <td>{getStatusBadge(user.status)}</td>
                                     <td>
-                                        <button className="action-icon" style={{ padding: '0.5rem' }}>
-                                            <MoreVertical size={16} />
-                                        </button>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button
+                                                className="btn btn-secondary"
+                                                style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem', display: 'flex', alignItems: 'center', gap: '4px' }}
+                                                onClick={() => setSelectedUser(user)}
+                                            >
+                                                <History size={14} /> Histórico
+                                            </button>
+                                            <button className="action-icon" style={{ padding: '0.5rem' }}>
+                                                <MoreVertical size={16} />
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             ))
@@ -126,6 +171,13 @@ const Users = () => {
                     </tbody>
                 </table>
             </div>
+
+            {selectedUser && (
+                <UserHistoryModal
+                    user={selectedUser}
+                    onClose={handleCloseHistory}
+                />
+            )}
         </div>
     );
 };

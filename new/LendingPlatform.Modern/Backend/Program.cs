@@ -1,12 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using LendingPlatform.Backend.Data;
 using LendingPlatform.Backend.Endpoints;
+using LendingPlatform.Backend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddScoped<NotificationService>();
 
 // Configure SQLite
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -42,11 +44,14 @@ using (var scope = app.Services.CreateScope())
 }
 
 // Map Endpoints
+app.MapAuthEndpoints();
 app.MapUserEndpoints();
+app.MapCategoryEndpoints();
 app.MapBookEndpoints();
 app.MapLoanEndpoints();
 app.MapFineEndpoints();
 app.MapReservationEndpoints();
+app.MapNotificationEndpoints();
 app.MapDashboardEndpoints();
 
 app.Run();

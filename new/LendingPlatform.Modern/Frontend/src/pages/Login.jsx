@@ -1,14 +1,26 @@
 import React, { useState } from 'react';
 import { Book, Mail, Lock, LogIn } from 'lucide-react';
+import { api } from '../api';
 
 const Login = ({ onLogin, onShowRegister }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
+    const [loading, setLoading] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        // Simulate login success
-        onLogin();
+        setError('');
+        setLoading(true);
+        try {
+            const user = await api.post('/auth/login', { email, password });
+            onLogin(user);
+        } catch (err) {
+            setError('Email ou senha inválidos.');
+            console.error(err);
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -36,6 +48,8 @@ const Login = ({ onLogin, onShowRegister }) => {
 
                 <h2 style={{ fontSize: '1.25rem', fontWeight: 700, color: 'var(--text-main)', marginBottom: '0.5rem' }}>Bem-vindo de volta</h2>
                 <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '2rem' }}>Gerencie sua biblioteca sem esforço.</p>
+
+                {error && <div style={{ marginBottom: '1rem', padding: '0.75rem', borderRadius: '0.5rem', backgroundColor: '#FEF2F2', color: '#B91C1C', fontSize: '0.875rem' }}>{error}</div>}
 
                 <form onSubmit={handleSubmit} style={{ textAlign: 'left' }}>
                     <div style={{ marginBottom: '1.25rem' }}>
@@ -71,8 +85,8 @@ const Login = ({ onLogin, onShowRegister }) => {
                         </div>
                     </div>
 
-                    <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '0.75rem', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-                        <LogIn size={18} /> Entrar no sistema
+                    <button type="submit" className="btn btn-primary" disabled={loading} style={{ width: '100%', padding: '0.75rem', fontWeight: 600, fontSize: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', opacity: loading ? 0.7 : 1 }}>
+                        <LogIn size={18} /> {loading ? 'Carregando...' : 'Entrar no sistema'}
                     </button>
                 </form>
 

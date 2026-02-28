@@ -35,3 +35,10 @@ public record CreateBookDto(
     string? Keywords,
     int? CategoryId
 );
+
+public record BookHistoryDto(
+    BookDto Book,
+    List<LoanDto> Loans,
+    int TotalLoans,
+    int ActiveLoans
+);

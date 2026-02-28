@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Book, Users, Clock, AlertTriangle, ArrowUpRight, TrendingUp, Calendar, Zap, Plus, ArrowRight } from 'lucide-react';
+import {
+    Book, Users, Clock, AlertCircle, AlertTriangle, TrendingUp, ChevronRight,
+    Calendar, Download, FileText, Zap, Plus, MoreVertical,
+    CheckCircle2, ArrowRight
+} from 'lucide-react';
 import { api } from '../api';
+import ExportModal from '../components/ExportModal';
 
-const Dashboard = () => {
+const Dashboard = ({ onNavigate }) => {
     const [metrics, setMetrics] = useState({
         totalBooks: 0,
         activeLoans: 0,
@@ -10,6 +15,7 @@ const Dashboard = () => {
         pendingFinesTotal: 0
     });
     const [topBooks, setTopBooks] = useState([]);
+    const [showExportModal, setShowExportModal] = useState(false);
     const [loans, setLoans] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -25,7 +31,12 @@ const Dashboard = () => {
                 api.get('/dashboard/top-books'),
                 api.get('/loans')
             ]);
-            setMetrics(m);
+            setMetrics({
+                totalBooks: m.totalBooks || m.TotalBooks || 0,
+                activeLoans: m.activeLoans || m.ActiveLoans || 0,
+                activeUsers: m.activeUsers || m.ActiveUsers || 0,
+                pendingFinesTotal: m.pendingFinesTotal || m.PendingFinesTotal || 0
+            });
             setTopBooks(top);
             setLoans(l.filter(loan => loan.status !== 'Returned').slice(0, 5));
         } catch (err) {
@@ -56,11 +67,12 @@ const Dashboard = () => {
                     </div>
                 </div>
                 <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button className="btn btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Zap size={16} /> Insights AI
-                    </button>
-                    <button className="btn btn-primary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <Plus size={16} /> Nova Atividade
+                    <button
+                        className="btn btn-primary"
+                        style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                        onClick={() => setShowExportModal(true)}
+                    >
+                        <FileText size={16} /> Exportar PDF
                     </button>
                 </div>
             </div>
@@ -113,7 +125,9 @@ const Dashboard = () => {
                             <AlertTriangle size={20} color="var(--danger)" />
                         </div>
                     </div>
-                    <div className="stat-value">R$ {metrics.pendingFinesTotal.toFixed(2)}</div>
+                    <div className="stat-value">
+                        {metrics.pendingFinesTotal.toLocaleString('pt-AO', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} Kz
+                    </div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--danger)', marginTop: '0.5rem', fontWeight: 600 }}>
                         Necessita atenção
                     </div>
@@ -125,7 +139,10 @@ const Dashboard = () => {
                 <div className="table-container" style={{ margin: 0 }}>
                     <div className="table-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <h3 style={{ fontSize: '1rem', fontWeight: 700, margin: 0 }}>Atividade Recente</h3>
-                        <button style={{ border: 'none', background: 'none', color: 'var(--primary)', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <button
+                            onClick={() => onNavigate('loans')}
+                            style={{ border: 'none', background: 'none', color: 'var(--primary)', fontSize: '0.8125rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                        >
                             Ver todos <ArrowRight size={14} />
                         </button>
                     </div>
@@ -198,6 +215,9 @@ const Dashboard = () => {
                     </div>
                 </div>
             </div>
+            {showExportModal && (
+                <ExportModal onClose={() => setShowExportModal(false)} />
+            )}
         </div>
     );
 };

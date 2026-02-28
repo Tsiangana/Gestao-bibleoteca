@@ -25,3 +25,17 @@ public record CreateUserDto(
 );
 
 public record UpdateUserStatusDto(string Status);
+
+public record LoginDto(string Email, string Password);
+
+public record RegisterDto(
+    string FullName,
+    string Email,
+    string Password,
+    string? StudentNumber = null,
+    string? DocumentId = null,
+    string? Phone = null,
+    string? Address = null,
+    string? PhotoUrl = null,
+    string Role = "Student"
+);

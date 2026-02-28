@@ -9,24 +9,41 @@ import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import NotificationsPage from './pages/Notifications';
 
 import './index.css';
 
 const App = () => {
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [user, setUser] = useState(() => {
+        const saved = localStorage.getItem('library_user');
+        return saved ? JSON.parse(saved) : null;
+    });
+    const [isLoggedIn, setIsLoggedIn] = useState(!!user);
     const [authView, setAuthView] = useState('login'); // 'login' or 'register'
     const [currentView, setCurrentView] = useState('dashboard');
+    const [selectedItemId, setSelectedItemId] = useState(null);
 
-    const handleLogin = () => {
-        setIsLoggedIn(true);
+    const navigateTo = (view, id = null) => {
+        setCurrentView(view);
+        setSelectedItemId(id);
     };
 
-    const handleRegister = () => {
+    const handleLogin = (userData) => {
+        setUser(userData);
         setIsLoggedIn(true);
+        localStorage.setItem('library_user', JSON.stringify(userData));
+    };
+
+    const handleRegister = (userData) => {
+        setUser(userData);
+        setIsLoggedIn(true);
+        localStorage.setItem('library_user', JSON.stringify(userData));
     };
 
     const handleLogout = () => {
+        setUser(null);
         setIsLoggedIn(false);
+        localStorage.removeItem('library_user');
         setAuthView('login');
         setCurrentView('dashboard');
     };
@@ -41,11 +58,11 @@ const App = () => {
     const renderContent = () => {
         switch (currentView) {
             case 'dashboard':
-                return <Dashboard />;
+                return <Dashboard onNavigate={navigateTo} />;
             case 'books':
-                return <Books />;
+                return <Books selectedId={selectedItemId} onClearSelection={() => setSelectedItemId(null)} />;
             case 'users':
-                return <Users />;
+                return <Users selectedId={selectedItemId} onClearSelection={() => setSelectedItemId(null)} />;
             case 'loans':
                 return <Loans />;
             case 'fines':
@@ -54,13 +71,15 @@ const App = () => {
                 return <Profile />;
             case 'settings':
                 return <Settings />;
+            case 'notifications':
+                return <NotificationsPage />;
             default:
                 return <Dashboard />;
         }
     };
 
     return (
-        <AppLayout currentView={currentView} setCurrentView={setCurrentView} onLogout={handleLogout}>
+        <AppLayout currentView={currentView} setCurrentView={navigateTo} onLogout={handleLogout}>
             {renderContent()}
         </AppLayout>
     );

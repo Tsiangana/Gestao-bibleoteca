@@ -2,10 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Filter, Search, CheckCircle, Clock } from 'lucide-react';
 import { api } from '../api';
 
+import LoanModal from '../components/LoanModal';
+
 const Loans = () => {
     const [loans, setLoans] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [showModal, setShowModal] = useState(false);
 
     useEffect(() => {
         fetchLoans();
@@ -22,6 +25,17 @@ const Loans = () => {
             console.error(err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleCreateLoan = async (loanData) => {
+        try {
+            await api.post('/loans', loanData);
+            setShowModal(false);
+            fetchLoans();
+        } catch (err) {
+            alert('Erro ao realizar empréstimo. Verifique se o usuário tem multas ou atingiu o limite de 3 livros.');
+            console.error(err);
         }
     };
 
@@ -59,10 +73,17 @@ const Loans = () => {
                         Acompanhe o fluxo de livros e gerencie prazos.
                     </p>
                 </div>
-                <button className="btn btn-primary">
+                <button className="btn btn-primary" onClick={() => setShowModal(true)}>
                     <Plus size={16} /> Novo Empréstimo
                 </button>
             </div>
+
+            {showModal && (
+                <LoanModal
+                    onClose={() => setShowModal(false)}
+                    onSave={handleCreateLoan}
+                />
+            )}
 
             <div className="table-container">
                 <div className="table-header">

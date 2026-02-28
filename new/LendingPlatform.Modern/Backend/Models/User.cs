@@ -22,6 +22,9 @@ public class User
     // Status: Active, Suspended, Blocked
     public string Status { get; set; } = "Active";
 
+    [Required]
+    public string Password { get; set; } = "password123";
+
     // Navigation properties
     [JsonIgnore]
     public ICollection<Loan> Loans { get; set; } = new List<Loan>();
