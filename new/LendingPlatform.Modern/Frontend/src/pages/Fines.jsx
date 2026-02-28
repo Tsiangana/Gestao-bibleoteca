@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, Search, CheckCircle } from 'lucide-react';
 import { api } from '../api';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 const Fines = () => {
     const [fines, setFines] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [payConfirm, setPayConfirm] = useState({ isOpen: false, fine: null });
 
     useEffect(() => {
         fetchFines();
@@ -25,10 +28,12 @@ const Fines = () => {
         }
     };
 
-    const payFine = async (id) => {
+    const payFine = async () => {
+        const fine = payConfirm.fine;
+        if (!fine) return;
+        setPayConfirm({ isOpen: false, fine: null });
         try {
-            await api.put(`/fines/${id}/pay`, {});
-            alert('Multa paga com sucesso e usuário desbloqueado!');
+            await api.put(`/fines/${fine.id}/pay`, {});
             fetchFines();
         } catch (err) {
             alert('Erro ao processar pagamento');
@@ -37,6 +42,16 @@ const Fines = () => {
     };
 
     const pendingAmount = fines.filter(f => !f.isPaid).reduce((sum, f) => sum + f.amount, 0);
+
+    const filteredFines = fines.filter(fine => {
+        if (!searchTerm.trim()) return true;
+        const q = searchTerm.toLowerCase();
+        return (
+            fine.userName?.toLowerCase().includes(q) ||
+            fine.bookTitle?.toLowerCase().includes(q) ||
+            String(fine.id).includes(q)
+        );
+    });
 
     if (loading) return <div style={{ padding: '2rem', textAlign: 'center' }}>Carregando multas...</div>;
     if (error) return <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--danger)' }}>{error}</div>;
@@ -60,12 +75,27 @@ const Fines = () => {
                     </div>
                 </div>
             </div>
+            <ConfirmationModal
+                isOpen={payConfirm.isOpen}
+                title="Confirmar Pagamento"
+                message={payConfirm.fine ? `Confirma o pagamento da multa de ${payConfirm.fine.amount.toLocaleString('pt-AO', { style: 'currency', currency: 'AOA' })} do utilizador ${payConfirm.fine.userName}?` : ''}
+                confirmText="Confirmar Pagamento"
+                cancelText="Cancelar"
+                onConfirm={payFine}
+                onCancel={() => setPayConfirm({ isOpen: false, fine: null })}
+                type="info"
+            />
 
             <div className="table-container">
                 <div className="table-header">
                     <div className="search-bar" style={{ width: '350px', backgroundColor: 'white', border: '1px solid var(--border-color)' }}>
                         <Search size={16} color="var(--text-secondary)" />
-                        <input type="text" placeholder="Buscar por usuário ou ID..." />
+                        <input
+                            type="text"
+                            placeholder="Buscar por usuário, livro ou ID..."
+                            value={searchTerm}
+                            onChange={e => setSearchTerm(e.target.value)}
+                        />
                     </div>
                 </div>
                 <table>
@@ -80,10 +110,10 @@ const Fines = () => {
                         </tr>
                     </thead>
                     <tbody>
-                        {fines.length === 0 ? (
-                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>Nenhuma multa registrada.</td></tr>
+                        {filteredFines.length === 0 ? (
+                            <tr><td colSpan="6" style={{ textAlign: 'center', padding: '2rem' }}>Nenhuma multa encontrada.</td></tr>
                         ) : (
-                            fines.map(fine => (
+                            filteredFines.map(fine => (
                                 <tr key={fine.id} style={{ opacity: fine.isPaid ? 0.6 : 1 }}>
                                     <td style={{ color: 'var(--text-secondary)' }}>#{fine.id}</td>
                                     <td style={{ fontWeight: '600', color: 'var(--text-main)' }}>{fine.userName}</td>
@@ -106,7 +136,7 @@ const Fines = () => {
                                             <button
                                                 className="btn btn-secondary"
                                                 style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem', color: 'var(--success)', borderColor: 'var(--success)' }}
-                                                onClick={() => payFine(fine.id)}
+                                                onClick={() => setPayConfirm({ isOpen: true, fine })}
                                             >
                                                 <CheckCircle size={14} /> Registrar Pgto.
                                             </button>

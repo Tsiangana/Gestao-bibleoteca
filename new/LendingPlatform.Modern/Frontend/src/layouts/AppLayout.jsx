@@ -12,6 +12,20 @@ const AppLayout = ({ children, currentView, setCurrentView, onLogout }) => {
   const [showSearchResults, setShowSearchResults] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
 
+  // Read logged-in user from localStorage
+  const currentUser = React.useMemo(() => {
+    try { return JSON.parse(localStorage.getItem('library_user') || '{}'); }
+    catch { return {}; }
+  }, []);
+
+  const getInitials = (name = '') =>
+    name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() || 'US';
+
+  const getRoleLabel = (role) => {
+    const map = { Admin: 'Administrador', Student: 'gestor', Professor: 'gestor', Librarian: 'gestor' };
+    return map[role] || role || 'Utilizador';
+  };
+
   React.useEffect(() => {
     fetchNotifications();
 
@@ -320,10 +334,14 @@ const AppLayout = ({ children, currentView, setCurrentView, onLogout }) => {
               onClick={() => setCurrentView('profile')}
               style={{ cursor: 'pointer' }}
             >
-              <div className="avatar">AD</div>
+              <div className="avatar">{getInitials(currentUser.fullName)}</div>
               <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-main)' }}>Admin</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Bibliotecário Chefe</span>
+                <span style={{ fontSize: '0.875rem', fontWeight: '600', color: 'var(--text-main)' }}>
+                  {(currentUser.fullName || 'Utilizador').split(' ')[0]}
+                </span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>
+                  {getRoleLabel(currentUser.role)}
+                </span>
               </div>
             </div>
           </div>

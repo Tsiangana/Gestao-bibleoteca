@@ -16,11 +16,13 @@ const Books = ({ selectedId, onClearSelection }) => {
     const [selectedBookId, setSelectedBookId] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [currentPage, setCurrentPage] = useState(1);
-    const [activeMenuId, setActiveMenuId] = useState(null);
-    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
     const [bookToDelete, setBookToDelete] = useState(null);
+    const [duplicatedTitleModal, setDuplicatedTitleModal] = useState({ isOpen: false, message: '' });
     const itemsPerPage = 10;
     const menuRef = useRef(null);
+
+    const [activeMenuId, setActiveMenuId] = useState(null);
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
     useEffect(() => {
         fetchBooks();
@@ -70,7 +72,14 @@ const Books = ({ selectedId, onClearSelection }) => {
             handleCloseModal();
             fetchBooks();
         } catch (err) {
-            alert('Erro ao salvar livro');
+            if (err.status === 409) {
+                setDuplicatedTitleModal({
+                    isOpen: true,
+                    message: err.data?.message || 'Já existe um livro cadastrado com este título no sistema.'
+                });
+            } else {
+                alert('Erro ao salvar livro');
+            }
             console.error(err);
         }
     };
@@ -192,6 +201,16 @@ const Books = ({ selectedId, onClearSelection }) => {
                 message={`Tem certeza que deseja eliminar o livro "${bookToDelete?.title}"? Esta ação removerá todas as informações vinculadas a ele e não pode ser desfeita.`}
                 confirmText="Eliminar permanentemente"
                 type="danger"
+            />
+
+            <ConfirmationModal
+                isOpen={duplicatedTitleModal.isOpen}
+                onCancel={() => setDuplicatedTitleModal({ isOpen: false, message: '' })}
+                onConfirm={() => setDuplicatedTitleModal({ isOpen: false, message: '' })}
+                title="Livro já existe"
+                message={duplicatedTitleModal.message}
+                confirmText="Entendido"
+                type="warning"
             />
 
             <div className="table-container">
